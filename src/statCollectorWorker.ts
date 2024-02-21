@@ -47,7 +47,7 @@ function collectCPUStats(statTime: number, timeInterval: number): Promise<any> {
 
 const memoryStatsHistogram: MemoryStats[] = []
 
-async function containerMaxMemory(): Promise<number | null> {
+async function containerCurrentMemory(): Promise<number | null> {
   // cgroup v2:
   let value = await readFile('/sys/fs/cgroup/memory.current', 'utf8').catch(
     _ => null
@@ -64,7 +64,7 @@ async function containerMaxMemory(): Promise<number | null> {
   return isNaN(parseFloat(value || '')) ? null : parseFloat(value!)
 }
 
-async function containerCurrentMemory(): Promise<number | null> {
+async function containerMaxMemory(): Promise<number | null> {
   // cgroup v2:
   let value = await readFile('/sys/fs/cgroup/memory.max', 'utf8').catch(
     _ => null

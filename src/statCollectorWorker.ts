@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises'
 import { createServer, IncomingMessage, Server, ServerResponse } from 'http'
 import si from 'systeminformation'
 import * as logger from './logger'
@@ -46,24 +47,49 @@ function collectCPUStats(statTime: number, timeInterval: number): Promise<any> {
 
 const memoryStatsHistogram: MemoryStats[] = []
 
-function collectMemoryStats(
+async function containerMaxMemory(): Promise<number | null> {
+  const value = await readFile('/sys/fs/cgroup/memory.current', 'utf8').catch(
+    err => null
+  )
+  return isNaN(parseFloat(value || '')) ? null : parseFloat(value!)
+}
+
+async function containerCurrentMemory(): Promise<number | null> {
+  const value = await readFile('/sys/fs/cgroup/memory.max', 'utf8').catch(
+    err => null
+  )
+  return isNaN(parseFloat(value || '')) ? null : parseFloat(value!)
+}
+
+async function collectMemoryStats(
   statTime: number,
   timeInterval: number
 ): Promise<any> {
-  return si
-    .mem()
-    .then((data: si.Systeminformation.MemData) => {
+  try {
+    let cgroupMax = await containerMaxMemory()
+    let cgroupCurrent = await containerCurrentMemory()
+
+    if (cgroupMax != null && cgroupCurrent != null) {
       const memoryStats: MemoryStats = {
         time: statTime,
-        totalMemoryMb: data.total / 1024 / 1024,
-        activeMemoryMb: data.active / 1024 / 1024,
-        availableMemoryMb: data.available / 1024 / 1024
+        totalMemoryMb: cgroupMax / 1024 / 1024,
+        activeMemoryMb: cgroupCurrent / 1024 / 1024,
+        availableMemoryMb: (cgroupMax - cgroupCurrent) / 1024 / 1024
       }
       memoryStatsHistogram.push(memoryStats)
-    })
-    .catch((error: any) => {
-      logger.error(error)
-    })
+    } else {
+      let systemInformationData: si.Systeminformation.MemData = await si.mem()
+      const memoryStats: MemoryStats = {
+        time: statTime,
+        totalMemoryMb: systemInformationData.total / 1024 / 1024,
+        activeMemoryMb: systemInformationData.active / 1024 / 1024,
+        availableMemoryMb: systemInformationData.available / 1024 / 1024
+      }
+      memoryStatsHistogram.push(memoryStats)
+    }
+  } catch (error: any) {
+    logger.error(error)
+  }
 }
 
 ///////////////////////////

@@ -40718,7 +40718,18 @@ function containerCurrentMemory() {
         if (value == null) {
             value = yield (0, promises_1.readFile)('/sys/fs/cgroup/memory/memory.usage_in_bytes', 'utf8').catch(_ => null);
         }
-        return isNaN(parseFloat(value || '')) ? null : parseFloat(value);
+        if (value == null) {
+            return null;
+        }
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue)) {
+            return null;
+        }
+        // When the limit isn't set, linux can return a very big integer:
+        if (numericValue > 5000000000000) {
+            return null;
+        }
+        return numericValue;
     });
 }
 function containerMaxMemory() {
@@ -40729,7 +40740,18 @@ function containerMaxMemory() {
         if (value == null) {
             value = yield (0, promises_1.readFile)('/sys/fs/cgroup/memory/memory.limit_in_bytes', 'utf8').catch(_ => null);
         }
-        return isNaN(parseFloat(value || '')) ? null : parseFloat(value);
+        if (value == null) {
+            return null;
+        }
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue)) {
+            return null;
+        }
+        // When the limit isn't set, linux can return a very big integer:
+        if (numericValue > 5000000000000) {
+            return null;
+        }
+        return numericValue;
     });
 }
 function collectMemoryStats(statTime, timeInterval) {

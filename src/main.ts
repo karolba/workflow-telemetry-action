@@ -13,7 +13,7 @@ async function run(): Promise<void> {
     // Start stat collector
     await statCollector.start()
     // Start process tracer
-    await processTracer.start()
+    //await processTracer.start()
 
     logger.info(`Initialization completed`)
   } catch (error: any) {

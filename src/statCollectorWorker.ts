@@ -61,7 +61,21 @@ async function containerCurrentMemory(): Promise<number | null> {
     ).catch(_ => null)
   }
 
-  return isNaN(parseFloat(value || '')) ? null : parseFloat(value!)
+  if (value == null) {
+    return null
+  }
+
+  const numericValue = parseFloat(value)
+  if (isNaN(numericValue)) {
+    return null
+  }
+
+  // When the limit isn't set, linux can return a very big integer:
+  if (numericValue > 5000000000000) {
+    return null
+  }
+
+  return numericValue
 }
 
 async function containerMaxMemory(): Promise<number | null> {
@@ -78,7 +92,21 @@ async function containerMaxMemory(): Promise<number | null> {
     ).catch(_ => null)
   }
 
-  return isNaN(parseFloat(value || '')) ? null : parseFloat(value!)
+  if (value == null) {
+    return null
+  }
+
+  const numericValue = parseFloat(value)
+  if (isNaN(numericValue)) {
+    return null
+  }
+
+  // When the limit isn't set, linux can return a very big integer:
+  if (numericValue > 5000000000000) {
+    return null
+  }
+
+  return numericValue
 }
 
 async function collectMemoryStats(

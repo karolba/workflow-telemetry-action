@@ -131,7 +131,7 @@ async function run(): Promise<void> {
     // Finish stat collector
     await statCollector.finish(currentJob)
     // Finish process tracer
-    await processTracer.finish(currentJob)
+    // await processTracer.finish(currentJob)
 
     // Report step tracer
     const stepTracerContent: string | null = await stepTracer.report(currentJob)
@@ -139,8 +139,8 @@ async function run(): Promise<void> {
     const stepCollectorContent: string | null =
       await statCollector.report(currentJob)
     // Report process tracer
-    const procTracerContent: string | null =
-      await processTracer.report(currentJob)
+    //const procTracerContent: string | null =
+      //await processTracer.report(currentJob)
 
     let allContent = ''
 
@@ -150,9 +150,9 @@ async function run(): Promise<void> {
     if (stepCollectorContent) {
       allContent = allContent.concat(stepCollectorContent, '\n')
     }
-    if (procTracerContent) {
-      allContent = allContent.concat(procTracerContent, '\n')
-    }
+    //if (procTracerContent) {
+      //allContent = allContent.concat(procTracerContent, '\n')
+    //}
 
     await reportAll(currentJob, allContent)
 
